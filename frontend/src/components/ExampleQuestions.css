@@ -1,0 +1,33 @@
+.example-questions {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.examples-title {
+  font-size: 0.875rem;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+.examples-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.example-button {
+  background-color: #edf2f7;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.example-button:hover {
+  background-color: #e2e8f0;
+  border-color: #cbd5e0;
+}

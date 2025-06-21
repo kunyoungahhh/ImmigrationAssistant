@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Assistant - Immigration Law</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: calc(100vh - 200px);
+        }
+        .loading-dots:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-center text-blue-800">Immigration Law Assistant</h1>
+            <p class="text-center text-gray-600 mt-2">Ask questions about immigration law and get answers based on legal documents</p>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div id="chat-container" class="chat-container overflow-y-auto mb-6 p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-start mb-4">
+                    <div class="flex-shrink-0 bg-blue-500 rounded-full w-10 h-10 flex items-center justify-center text-white font-bold">
+                        AI
+                    </div>
+                    <div class="ml-3 bg-blue-100 p-3 rounded-lg">
+                        <p>Hello! I'm your immigration law assistant. Ask me any question about immigration law, and I'll try to answer based on the documents I've been trained on.</p>
+                    </div>
+                </div>
+                <!-- Chat messages will appear here -->
+            </div>
+
+            <div class="flex items-center">
+                <input type="text" id="question-input" placeholder="Ask a question about immigration law..." 
+                       class="flex-grow px-4 py-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="ask-button" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-r-lg transition duration-200">
+                    Ask
+                </button>
+            </div>
+            
+            <div class="mt-4 text-sm text-gray-500">
+                <p>Examples:</p>
+                <ul class="mt-2 space-y-1">
+                    <li><a href="#" class="example-question text-blue-600 hover:underline">What are the requirements for a work visa?</a></li>
+                    <li><a href="#" class="example-question text-blue-600 hover:underline">How long can I stay in the country with a tourist visa?</a></li>
+                    <li><a href="#" class="example-question text-blue-600 hover:underline">What is the process for family reunification?</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <footer class="mt-8 text-center text-gray-500 text-sm">
+            <p>This assistant provides information based on specific legal documents. It is not a substitute for professional legal advice.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatContainer = document.getElementById('chat-container');
+            const questionInput = document.getElementById('question-input');
+            const askButton = document.getElementById('ask-button');
+            
+            // Handle ask button click
+            askButton.addEventListener('click', askQuestion);
+            
+            // Handle enter key press
+            questionInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    askQuestion();
+                }
+            });
+            
+            // Handle example questions
+            document.querySelectorAll('.example-question').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    questionInput.value = this.textContent;
+                    askQuestion();
+                });
+            });
+            
+            function askQuestion() {
+                const question = questionInput.value.trim();
+                if (!question) return;
+                
+                // Add user message
+                addMessage('user', question);
+                
+                // Add loading message
+                const loadingId = 'loading-' + Date.now();
+                addMessage('assistant', '<span id="' + loadingId + '" class="loading-dots">Thinking</span>', loadingId);
+                
+                // Clear input
+                questionInput.value = '';
+                
+                // Send request to API
+                fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: question }),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Replace loading message with response
+                    const loadingElement = document.getElementById(loadingId);
+                    const messageElement = loadingElement.closest('.flex');
+                    
+                    let messageContent = data.answer;
+                    
+                    // Add sources if available
+                    if (data.sources && data.sources.length > 0) {
+                        messageContent += '<div class="mt-2 pt-2 border-t border-gray-200"><span class="text-xs font-semibold">Sources:</span> ';
+                        messageContent += data.sources.join(', ');
+                        messageContent += '</div>';
+                    }
+                    
+                    // Add processing time if available
+                    if (data.processing_time) {
+                        messageContent += '<div class="mt-1 text-xs text-gray-400">Processed in ' + data.processing_time + '</div>';
+                    }
+                    
+                    messageElement.querySelector('.bg-blue-100').innerHTML = messageContent;
+                })
+                .catch(error => {
+                    // Show error message
+                    const loadingElement = document.getElementById(loadingId);
+                    const messageElement = loadingElement.closest('.flex');
+                    messageElement.querySelector('.bg-blue-100').innerHTML = 'Sorry, there was an error processing your request. Please try again.';
+                    console.error('Error:', error);
+                });
+            }
+            
+            function addMessage(sender, content, id = null) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'flex items-start mb-4';
+                
+                let avatar, messageClass;
+                
+                if (sender === 'user') {
+                    avatar = 'You';
+                    messageClass = 'bg-green-100';
+                } else {
+                    avatar = 'AI';
+                    messageClass = 'bg-blue-100';
+                }
+                
+                messageDiv.innerHTML = `
+                    <div class="flex-shrink-0 ${sender === 'user' ? 'bg-green-500' : 'bg-blue-500'} rounded-full w-10 h-10 flex items-center justify-center text-white font-bold">
+                        ${avatar}
+                    </div>
+                    <div class="ml-3 ${messageClass} p-3 rounded-lg">
+                        ${content}
+                    </div>
+                `;
+                
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>
