@@ -25,3 +25,5 @@ An AI-powered assistant that helps immigrants navigate complex immigration proce
 2. **Query Processing**: User questions are processed by the ReActAgent
 3. **Information Retrieval**: Relevant information is retrieved using vector search
 4. **Response Generation**: GPT-4 generates accurate, contextual answers
+
+Thank you! 
