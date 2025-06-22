@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: immigration-backend
+    runtime: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python backend/immigrationAssistant.py"
+    plan: free
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+
+  - type: web
+    name: immigration-frontend
+    runtime: static
+    buildCommand: "cd frontend && npm install && npm run build"
+    staticPublishPath: "frontend/dist"

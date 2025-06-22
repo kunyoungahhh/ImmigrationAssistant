@@ -183,6 +183,10 @@ def query():
         
         # Join the chunks with separators
         context = "\n---\n".join(relevant_chunks)
+
+        print("\n🧩 Relevant Chunks Used for Answer:")
+        for idx, (chunk, meta) in enumerate(zip(relevant_chunks, [chunk_metadata[i] for i in indices[0]])):
+            print(f"\n--- Chunk {idx + 1} (Page {meta['page'] + 1}) ---\n{chunk}")
         
         # Generate the answer
         answer = generate_answer(user_input, context)
